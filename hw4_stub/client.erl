@@ -113,7 +113,7 @@ do_join(State, Ref, ChatName) ->
 			whereis(list_to_atom(State#cl_st.gui))!{result, self(), Ref, err}, 
 			{err, State};
 		false -> 
-			whereis(server)!{self(), Ref, join, ChatName}
+			whereis(server)!{self(), Ref, join, ChatName},
 			receive
 				{From, Ref, connect, History} ->
 					Updated = State#cl_st{con_ch = maps:put(ChatName, From, State#cl_st.con_ch)},
@@ -129,7 +129,7 @@ do_leave(State, Ref, ChatName) ->
 			whereis(list_to_atom(State#cl_st.gui))!{result, self(), Ref, err},
 			{err, State};
 		false -> 
-			whereis(server)!{self(), Ref, leave, ChatName}
+			whereis(server)!{self(), Ref, leave, ChatName},
 			receive
 				{From, Ref, ack_leave} ->
 					Updated = State#cl_st{con_ch = maps:remove(ChatName, From, State#cl_st.con_ch)},
