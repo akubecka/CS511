@@ -65,7 +65,7 @@ do_join(ChatName, ClientPID, Ref, State) ->
 		false -> %%Chatroom does not already exist
 			ChatPID = spawn(chatroom, start_chatroom, [ChatName]),
 			ChatPID!{self(), Ref, register, ClientPID, ClNick},
-			State#serv_st{registrations = maps:put(ChatName, [ClientPID], maps:get(ChatName, State#serv_st.registrations), State#serv_st.registration)};
+			State#serv_st{registrations = maps:put(ChatName, [ClientPID], maps:get(ChatName, State#serv_st.registrations), State#serv_st.registrations)};
 		true -> %%Chatroom exists
 			maps:find(ChatName, State#serv_st.chatrooms)!{self(), Ref, register, ClientPID, ClNick},
 			State#serv_st{registrations = maps:update(ChatName, lists:append([ClientPID], maps:get(ChatName, State#serv_st.registrations)), State#serv_st.registrations)}
@@ -75,7 +75,7 @@ do_join(ChatName, ClientPID, Ref, State) ->
 do_leave(ChatName, ClientPID, Ref, State) ->
 	%%ClNick = maps:find(ClientPID, State#serv_st.nicks),
 	ChatPID = maps:key(State#serv_st.chatrooms),
-	State#serv_st{registrations = maps:update(ChatName, lists:delete([ClientPID], maps:get(ChatName, State#serv_st.registrations)), State#serv_st.registration)},
+	State#serv_st{registrations = maps:update(ChatName, lists:delete([ClientPID], maps:get(ChatName, State#serv_st.registrations)), State#serv_st.registrations)},
 	ChatPID!{self(), Ref, unregister, ClientPID},
 	ClientPID!{self(), Ref, ack_leave}.
 
