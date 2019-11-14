@@ -134,7 +134,7 @@ do_leave(State, Ref, ChatName) ->
 				{From, Ref, ack_leave} ->
 					Updated = State#cl_st{con_ch = maps:remove(ChatName, From, State#cl_st.con_ch)},
 					whereis(list_to_atom(State#cl_st.gui))!{result, self(), Ref, ok},
-					{ack_leave, Updated};
+					{ack_leave, Updated}
 			end
 	end.
 
