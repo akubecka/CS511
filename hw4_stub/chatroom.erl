@@ -56,5 +56,12 @@ do_update_nick(State, ClientPID, NewNick) ->
 %% (read assignment specs for details)
 do_propegate_message(State, Ref, ClientPID, Message) ->
     ClientPID!{self(), Ref, ack_msg},
-	lists:foreach(fun(X)->case X =/= ClientPID of true -> X!{request, self(), Ref, {incoming_msg, maps:get(ClientPID, State#chat_st.registrations), State#chat_st.name, Message}}; false -> ok end end, maps:keys(State#chat_st.registrations)),
+	lists:foreach(fun(X) ->
+		case X =/= ClientPID of 
+			true -> 
+				X!{request, self(), Ref, {incoming_msg, maps:get(ClientPID, State#chat_st.registrations), State#chat_st.name, Message}};
+			false -> 
+				ok end 
+		end,
+		maps:keys(State#chat_st.registrations)),
 	State#chat_st{history = lists:append(State#chat_st.history, [{maps:get(ClientPID, State#chat_st.registrations), Message}])}.

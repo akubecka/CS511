@@ -140,13 +140,27 @@ do_leave(State, Ref, ChatName) ->
 
 %% executes `/nick` protocol from client perspective
 do_new_nick(State, Ref, NewNick) ->
-    io:format("client:do_new_nick(...): IMPLEMENT ME~n"),
-    {{dummy_target, dummy_response}, State}.
+	case NewNick == nick of
+		true ->
+			whereis(list_to_atom(State#cl_st.gui))!{result, self(), Ref, err_same},
+			{err_same, State};
+		false ->
+			whereis(server)!{self(), Ref, nick, NewNick},
+			receive
+				{From, Ref, err_nick_used} ->
+					whereis(list_to_atom(State#cl_st.gui))!{result, self(), Ref, err_nick_used},
+					{err_nick_used, State};
 
 %% executes send message protocol from client perspective
 do_msg_send(State, Ref, ChatName, Message) ->
-    io:format("client:do_new_nick(...): IMPLEMENT ME~n"),
-    {{dummy_target, dummy_response}, State}.
+    ChatPID = maps:get(ChatName, map:keys(State#cl_st.con_ch)),
+	ChatPID!{self(), Ref, message, Message},
+	%%receive here or nah?
+	receive
+		{From, Ref, ack_msg} ->
+			whereis(list_to_atom(State#cl_st.gui))!{result, self(), Ref, {msg_sent, State#cl_st.nick}}
+		end
+	end.
 
 %% executes new incoming message protocol from client perspective
 do_new_incoming_msg(State, _Ref, CliNick, ChatName, Msg) ->
@@ -156,5 +170,9 @@ do_new_incoming_msg(State, _Ref, CliNick, ChatName, Msg) ->
 
 %% executes quit protocol from client perspective
 do_quit(State, Ref) ->
-    io:format("client:do_new_nick(...): IMPLEMENT ME~n"),
-    {{dummy_target, dummy_response}, State}.
+    whereis(server)!{self(), Ref, quit},
+	receive
+		{From, Ref, ack_quit} ->
+			whereis(list_to_atom(State#cl_st.gui))!{self(), Ref, ack_quit}
+		end
+	end.
