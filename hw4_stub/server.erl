@@ -93,7 +93,7 @@ do_new_nick(State, Ref, ClientPID, NewNick) ->
 					false -> 
 						ok end 
 				end,
-				maps:keys(State#chat_st.nicks)),
+				maps:keys(State#serv_st.nicks)),
 			ClientPID!{result, self(), Ref, ok_nick};
 		true ->
 			ClientPID!{self(), Ref, err_nick_used}
@@ -101,7 +101,7 @@ do_new_nick(State, Ref, ClientPID, NewNick) ->
 
 %% executes client quit protocol from server perspective
 do_client_quit(State, Ref, ClientPID) ->
-	State#serv_st{nick = maps:remove(ClientPID, State#serv_st.nick)},
+	State#serv_st{nicks = maps:remove(ClientPID, State#serv_st.nicks)},
 	ChatPID = maps:keys(State#serv_st.chatrooms),
     lists:foreach(fun(X) ->
 		case X =/= ChatPID of 
@@ -110,6 +110,6 @@ do_client_quit(State, Ref, ClientPID) ->
 			false -> 
 				ok end 
 		end,
-		maps:keys(State#chat_st.nicks)),
+		maps:keys(State#serv_st.nicks)),
 	State#serv_st{registrations = maps:remove(ClientPID, State#serv_st.registrations)},
 	ClientPID!{self(), Ref, ack_quit}.
