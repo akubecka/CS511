@@ -96,7 +96,8 @@ do_new_nick(State, Ref, ClientPID, NewNick) ->
 				maps:keys(State#chat_st.nicks)),
 			ClientPID!{result, self(), Ref, ok_nick};
 		true ->
-			ClientPID!{self(), Ref, err_nick_used}.
+			ClientPID!{self(), Ref, err_nick_used}
+	end.
 
 %% executes client quit protocol from server perspective
 do_client_quit(State, Ref, ClientPID) ->
