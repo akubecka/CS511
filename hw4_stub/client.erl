@@ -149,8 +149,9 @@ do_new_nick(State, Ref, NewNick) ->
 			receive
 				{From, Ref, err_nick_used} ->
 					whereis(list_to_atom(State#cl_st.gui))!{result, self(), Ref, err_nick_used},
-					{err_nick_used, State};
-				end.
+					{err_nick_used, State}
+				end
+		end.
 
 %% executes send message protocol from client perspective
 do_msg_send(State, Ref, ChatName, Message) ->
