@@ -95,7 +95,7 @@ do_new_nick(State, Ref, ClientPID, NewNick) ->
 				end,
 			ClientPID!{result, self(), Ref, ok_nick};
 		true ->
-			ClientPID!{self(), Ref, err_nick_used};
+			ClientPID!{self(), Ref, err_nick_used}.
 
 %% executes client quit protocol from server perspective
 do_client_quit(State, Ref, ClientPID) ->

@@ -150,6 +150,7 @@ do_new_nick(State, Ref, NewNick) ->
 				{From, Ref, err_nick_used} ->
 					whereis(list_to_atom(State#cl_st.gui))!{result, self(), Ref, err_nick_used},
 					{err_nick_used, State};
+				end.
 
 %% executes send message protocol from client perspective
 do_msg_send(State, Ref, ChatName, Message) ->
@@ -159,8 +160,7 @@ do_msg_send(State, Ref, ChatName, Message) ->
 	receive
 		{From, Ref, ack_msg} ->
 			whereis(list_to_atom(State#cl_st.gui))!{result, self(), Ref, {msg_sent, State#cl_st.nick}}
-		end
-	end.
+		end.
 
 %% executes new incoming message protocol from client perspective
 do_new_incoming_msg(State, _Ref, CliNick, ChatName, Msg) ->
@@ -174,5 +174,4 @@ do_quit(State, Ref) ->
 	receive
 		{From, Ref, ack_quit} ->
 			whereis(list_to_atom(State#cl_st.gui))!{self(), Ref, ack_quit}
-		end
-	end.
+		end.
