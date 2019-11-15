@@ -83,7 +83,7 @@ do_leave(ChatName, ClientPID, Ref, State) ->
 %% executes new nickname protocol from server perspective
 do_new_nick(State, Ref, ClientPID, NewNick) ->
     %%ClientPID!{request, self(), Ref, {nick, NewNick}};
-	case lists:member(NewNick, map:keys(State#serv_st.nicks)) of
+	case lists:member(NewNick, map:values(State#serv_st.nicks)) of
 		false -> %%Nickname not already used
 			State#serv_st{nicks = maps:update(ClientPID, NewNick, State#serv_st.nicks)},
 			ChatPID = maps:keys(State#serv_st.chatrooms),
