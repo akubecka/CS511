@@ -89,7 +89,7 @@ do_new_nick(State, Ref, ClientPID, NewNick) ->
 			lists:foreach(fun(X) ->
 				case X =/= ChatPID of 
 					true -> 
-						X!{self(), Ref, update_nick, ClientPID, NewNick},
+						X!{self(), Ref, update_nick, ClientPID, NewNick};
 					false -> 
 						ok end 
 				end,
@@ -104,7 +104,7 @@ do_client_quit(State, Ref, ClientPID) ->
     lists:foreach(fun(X) ->
 		case X =/= ChatPID of 
 			true -> 
-				X!{self(), Ref, unregister, ClientPID},
+				X!{self(), Ref, unregister, ClientPID};
 			false -> 
 				ok end 
 		end,
