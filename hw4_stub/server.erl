@@ -93,6 +93,7 @@ do_new_nick(State, Ref, ClientPID, NewNick) ->
 					false -> 
 						ok end 
 				end,
+				maps:keys(State#chat_st.nicks)),
 			ClientPID!{result, self(), Ref, ok_nick};
 		true ->
 			ClientPID!{self(), Ref, err_nick_used}.
@@ -108,5 +109,6 @@ do_client_quit(State, Ref, ClientPID) ->
 			false -> 
 				ok end 
 		end,
+		maps:keys(State#chat_st.nicks)),
 	State#serv_st{registrations = maps:remove(ClientPID, State#serv_st.registrations)},
 	ClientPID!{self(), Ref, ack_quit}.
