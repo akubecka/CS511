@@ -108,6 +108,7 @@ loop(State, Request, Ref) ->
 
 %% executes `/join` protocol from client perspective
 do_join(State, Ref, ChatName) ->
+	io:format("Join client"),
     case lists:member(ChatName, map:keys(State#cl_st.con_ch)) of
 		true -> 
 			whereis(list_to_atom(State#cl_st.gui))!{result, self(), Ref, err}, 
