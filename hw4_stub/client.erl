@@ -111,9 +111,11 @@ do_join(State, Ref, ChatName) ->
 	io:format("Join client"),
     case lists:member(ChatName, map:keys(State#cl_st.con_ch)) of
 		true -> 
+			io:format("Join client-true"),
 			whereis(list_to_atom(State#cl_st.gui))!{result, self(), Ref, err}, 
 			{err, State};
 		false -> 
+			io:format("Join client-false"),
 			whereis(server)!{self(), Ref, join, ChatName},
 			receive
 				{From, Ref, connect, History} ->
