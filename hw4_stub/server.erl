@@ -97,11 +97,13 @@ do_new_nick(State, Ref, ClientPID, NewNick) ->
 					end
 				end,
 				ListOfChats = maps:fold(Fun, [], Updated#serv_st.registrations),
+				io:format(" mid false Server NewNick"),
 			lists:foreach(fun(X) ->
 				maps:get(X, Updated#serv_st.chatrooms)!{self(), Ref, update_nick, ClientPID, NewNick}
 				end,
 				ListOfChats),
 			ClientPID!{result, self(), Ref, ok_nick},
+			io:format(" end false Server NewNick"),
 			Updated;
 		true ->
 			io:format("true Server NewNick"),

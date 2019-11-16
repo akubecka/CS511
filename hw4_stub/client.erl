@@ -151,11 +151,13 @@ do_new_nick(State, Ref, NewNick) ->
 			io:format("false client NewNick"),
 			whereis(server)!{self(), Ref, nick, NewNick},
 			receive
-				{From, Ref, err_nick_used} ->
+				{_, Ref, err_nick_used} ->
+					io:format("receive err client NewNick"),
 					whereis(list_to_atom(State#cl_st.gui))!{result, self(), Ref, err_nick_used},
 					{err_nick_used, State};
-				{From, Red, ok_nick} ->
-					whereis(list_to_atom(State#cl_st.gui))!{result, self(), Ref, err_nick_used},
+				{_, Ref, ok_nick} ->
+					io:format("receive ok client NewNick"),
+					whereis(list_to_atom(State#cl_st.gui))!{result, self(), Ref, ok_nick},
 					{ok_nick, State#cl_st{nick=NewNick}}
 				end
 		end.
