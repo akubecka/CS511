@@ -51,7 +51,6 @@ do_unregister(State, ClientPID) ->
 
 %% This function should update the nickname of specified client.
 do_update_nick(State, ClientPID, NewNick) ->
-	io:format(" Chatroom NewNick"),
     Updated = State#chat_st{registrations = maps:update(ClientPID, NewNick, State#chat_st.registrations)},
 	Updated.
 
@@ -68,4 +67,5 @@ do_propegate_message(State, Ref, ClientPID, Message) ->
 		end,
 		maps:keys(State#chat_st.registrations)),
 	Updated = State#chat_st{history = lists:append(State#chat_st.history, [{maps:get(ClientPID, State#chat_st.registrations), Message}])},
+	io:format("Propegate message done"),
 	Updated.

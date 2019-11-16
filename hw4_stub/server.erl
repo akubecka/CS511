@@ -78,15 +78,14 @@ do_leave(ChatName, ClientPID, Ref, State) ->
 	Updated = State#serv_st{registrations = maps:update(ChatName, lists:delete([ClientPID], maps:get(ChatName, State#serv_st.registrations)), State#serv_st.registrations)},
 	ChatPID!{self(), Ref, unregister, ClientPID},
 	ClientPID!{self(), Ref, ack_leave},
+	io:format("Server leave done"),
 	Updated.
 
 
 %% executes new nickname protocol from server perspective
 do_new_nick(State, Ref, ClientPID, NewNick) ->
-    io:format("Server NewNick"),
 	case lists:member(NewNick, maps:values(State#serv_st.nicks)) of
 		false -> %%Nickname not already used
-			io:format("false Server NewNick"),
 			Updated = State#serv_st{nicks = maps:update(ClientPID, NewNick, State#serv_st.nicks)},
 			Fun = fun(K,V,Chats) ->
 				case lists:member(ClientPID, V) of
@@ -97,16 +96,13 @@ do_new_nick(State, Ref, ClientPID, NewNick) ->
 					end
 				end,
 				ListOfChats = maps:fold(Fun, [], Updated#serv_st.registrations),
-				io:format(" mid false Server NewNick"),
 			lists:foreach(fun(X) ->
 				maps:get(X, Updated#serv_st.chatrooms)!{self(), Ref, update_nick, ClientPID, NewNick}
 				end,
 				ListOfChats),
 			ClientPID!{self(), Ref, ok_nick},
-			io:format(" end false Server NewNick"),
 			Updated;
 		true ->
-			io:format("true Server NewNick"),
 			ClientPID!{self(), Ref, err_nick_used},
 			State
 	end.
@@ -140,4 +136,5 @@ do_client_quit(State, Ref, ClientPID) ->
 			Temp),
 	Updated2 = Updated1#serv_st{registrations = NewRegMap},
 	ClientPID!{self(), Ref, ack_quit},
+	io:format("Client quit done"),
 	Updated2.

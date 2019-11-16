@@ -141,22 +141,17 @@ do_leave(State, Ref, ChatName) ->
 
 %% executes `/nick` protocol from client perspective
 do_new_nick(State, Ref, NewNick) ->
-	io:format("Client NewNick"),
 	case string:equal(NewNick, State#cl_st.nick) of
 		true ->
-			io:format("true client NewNick"),
 			whereis(list_to_atom(State#cl_st.gui))!{result, self(), Ref, err_same},
 			{err_same, State};
 		false ->
-			io:format("false client NewNick"),
 			whereis(server)!{self(), Ref, nick, NewNick},
 			receive
 				{_, Ref, err_nick_used} ->
-					io:format("receive err client NewNick"),
 					whereis(list_to_atom(State#cl_st.gui))!{result, self(), Ref, err_nick_used},
 					{err_nick_used, State};
 				{_, Ref, ok_nick} ->
-					io:format("receive ok client NewNick"),
 					whereis(list_to_atom(State#cl_st.gui))!{result, self(), Ref, ok_nick},
 					{ok_nick, State#cl_st{nick=NewNick}}
 				end
@@ -167,7 +162,7 @@ do_msg_send(State, Ref, ChatName, Message) ->
     ChatPID = maps:get(ChatName, State#cl_st.con_ch),
 	ChatPID!{self(), Ref, message, Message},
 	receive
-		{From, Ref, ack_msg} ->
+		{_, Ref, ack_msg} ->
 			whereis(list_to_atom(State#cl_st.gui))!{result, self(), Ref, {msg_sent, State#cl_st.nick}},
 			{ack_msg, State}
 		end.
@@ -182,8 +177,8 @@ do_new_incoming_msg(State, _Ref, CliNick, ChatName, Msg) ->
 do_quit(State, Ref) ->
     whereis(server)!{self(), Ref, quit},
 	receive
-		{From, Ref, ack_quit} ->
+		{_, Ref, ack_quit} ->
 			whereis(list_to_atom(State#cl_st.gui))!{self(), Ref, ack_quit},
 			exit(normal),
 			{ack_quit, State}
-		end.
+	end.
