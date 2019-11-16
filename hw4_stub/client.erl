@@ -141,11 +141,14 @@ do_leave(State, Ref, ChatName) ->
 
 %% executes `/nick` protocol from client perspective
 do_new_nick(State, Ref, NewNick) ->
-	case NewNick == nick of
+	io:format("Client NewNick"),
+	case string:equal(NewNick, State#cl_st.nick) of
 		true ->
+			io:format("true client NewNick"),
 			whereis(list_to_atom(State#cl_st.gui))!{result, self(), Ref, err_same},
 			{err_same, State};
 		false ->
+			io:format("false client NewNick"),
 			whereis(server)!{self(), Ref, nick, NewNick},
 			receive
 				{From, Ref, err_nick_used} ->
