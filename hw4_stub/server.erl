@@ -60,7 +60,7 @@ loop(State) ->
 
 %% executes join protocol from server perspective
 do_join(ChatName, ClientPID, Ref, State) ->
-	case lists:member(ChatName, maps:keys(State#serv_st.chatrooms)) of
+	case maps:find(ChatName, State#serv_st.chatrooms) of
 		error -> %%Chatroom does not already exist
 			ChatPID = spawn(chatroom, start_chatroom, [ChatName]),
 			ClientNick = maps:find(ClientPID, State#serv_st.nicks),	
