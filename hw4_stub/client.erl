@@ -108,19 +108,17 @@ loop(State, Request, Ref) ->
 
 %% executes `/join` protocol from client perspective
 do_join(State, Ref, ChatName) ->
-	io:format("Join client"),
+	%%io:format("Join client"),
     case lists:member(ChatName, map:keys(State#cl_st.con_ch)) of
 		true -> 
-			io:format("Join client-true"),
 			whereis(list_to_atom(State#cl_st.gui))!{result, self(), Ref, err}, 
 			{err, State};
 		false -> 
-			io:format("Join client-false"),
 			whereis(server)!{self(), Ref, join, ChatName},
 			receive
 				{From, Ref, connect, History} ->
 					Updated = State#cl_st{con_ch = maps:put(ChatName, From, State#cl_st.con_ch)},
-					whereis(list_to_atom(State#cl_st.gui))!{result, self(), Ref, History},
+					whereis(list_to_atom(Updated#cl_st.gui))!{result, self(), Ref, History},
 					{connect, Updated}
 			end
 	end.
@@ -136,7 +134,7 @@ do_leave(State, Ref, ChatName) ->
 			receive
 				{From, Ref, ack_leave} ->
 					Updated = State#cl_st{con_ch = maps:remove(ChatName, From, State#cl_st.con_ch)},
-					whereis(list_to_atom(State#cl_st.gui))!{result, self(), Ref, ok},
+					whereis(list_to_atom(Updated#cl_st.gui))!{result, self(), Ref, ok},
 					{ack_leave, Updated}
 			end
 	end.
@@ -152,7 +150,10 @@ do_new_nick(State, Ref, NewNick) ->
 			receive
 				{From, Ref, err_nick_used} ->
 					whereis(list_to_atom(State#cl_st.gui))!{result, self(), Ref, err_nick_used},
-					{err_nick_used, State}
+					{err_nick_used, State};
+				{From, Red, ok_nick} ->
+					whereis(list_to_atom(State#cl_st.gui))!{result, self(), Ref, err_nick_used},
+					{ok_nick, State#cl_st{nick=NewNick}
 				end
 		end.
 
@@ -160,10 +161,10 @@ do_new_nick(State, Ref, NewNick) ->
 do_msg_send(State, Ref, ChatName, Message) ->
     ChatPID = maps:get(ChatName, map:keys(State#cl_st.con_ch)),
 	ChatPID!{self(), Ref, message, Message},
-	%%receive here or nah?
 	receive
 		{From, Ref, ack_msg} ->
 			whereis(list_to_atom(State#cl_st.gui))!{result, self(), Ref, {msg_sent, State#cl_st.nick}}
+			{ack_msg, State}
 		end.
 
 %% executes new incoming message protocol from client perspective
@@ -177,5 +178,7 @@ do_quit(State, Ref) ->
     whereis(server)!{self(), Ref, quit},
 	receive
 		{From, Ref, ack_quit} ->
-			whereis(list_to_atom(State#cl_st.gui))!{self(), Ref, ack_quit}
+			whereis(list_to_atom(State#cl_st.gui))!{self(), Ref, ack_quit},
+			exit(normal),
+			{ack_quit, State}
 		end.
