@@ -163,7 +163,7 @@ do_msg_send(State, Ref, ChatName, Message) ->
 	ChatPID!{self(), Ref, message, Message},
 	receive
 		{From, Ref, ack_msg} ->
-			whereis(list_to_atom(State#cl_st.gui))!{result, self(), Ref, {msg_sent, State#cl_st.nick}}
+			whereis(list_to_atom(State#cl_st.gui))!{result, self(), Ref, {msg_sent, State#cl_st.nick}},
 			{ack_msg, State}
 		end.
 
