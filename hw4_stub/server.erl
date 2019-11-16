@@ -102,7 +102,7 @@ do_new_nick(State, Ref, ClientPID, NewNick) ->
 				maps:get(X, Updated#serv_st.chatrooms)!{self(), Ref, update_nick, ClientPID, NewNick}
 				end,
 				ListOfChats),
-			ClientPID!{result, self(), Ref, ok_nick},
+			ClientPID!{self(), Ref, ok_nick},
 			io:format(" end false Server NewNick"),
 			Updated;
 		true ->
