@@ -153,7 +153,7 @@ do_new_nick(State, Ref, NewNick) ->
 					{err_nick_used, State};
 				{From, Red, ok_nick} ->
 					whereis(list_to_atom(State#cl_st.gui))!{result, self(), Ref, err_nick_used},
-					{ok_nick, State#cl_st{nick=NewNick}
+					{ok_nick, State#cl_st{nick=NewNick}}
 				end
 		end.
 
