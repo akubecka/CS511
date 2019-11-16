@@ -113,15 +113,30 @@ do_new_nick(State, Ref, ClientPID, NewNick) ->
 
 %% executes client quit protocol from server perspective
 do_client_quit(State, Ref, ClientPID) ->
-	State#serv_st{nicks = maps:remove(ClientPID, State#serv_st.nicks)},
-	ChatPID = maps:keys(State#serv_st.chatrooms),
-    lists:foreach(fun(X) ->
-		case X =/= ChatPID of 
-			true -> 
-				X!{self(), Ref, unregister, ClientPID};
-			false -> 
-				ok end 
+	Updated1 = State#serv_st{nicks = maps:remove(ClientPID, State#serv_st.nicks)},
+	Fun = fun(K,V,Chats) ->
+		case lists:member(ClientPID, V) of
+			true ->
+				lists:append([K], Chats);
+			false ->
+				Chats
+			end
 		end,
-		maps:keys(State#serv_st.nicks)),
-	State#serv_st{registrations = maps:remove(ClientPID, State#serv_st.registrations)},
-	ClientPID!{self(), Ref, ack_quit}.
+	ListOfChats = maps:fold(Fun, [], Updated1#serv_st.registrations),
+	lists:foreach(fun(X) ->
+		maps:get(X, Updated1#serv_st.chatrooms)!{self(), Ref, unregister, ClientPID}
+		end,
+		ListOfChats),
+		NewRegMap = maps:fold(fun(K,V,Map)->
+			case lists:member(ClientPID,V) of
+				true->
+					maps:update(K, lists:delete(ClientPID, V), Map);
+				false ->
+					ok
+				end
+			end,
+			Temp,
+			Temp),
+	Updated2 = Updated1#serv_st{registrations = NewRegMap},
+	ClientPID!{self(), Ref, ack_quit},
+	Updated2.
