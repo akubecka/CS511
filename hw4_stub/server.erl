@@ -65,7 +65,7 @@ do_join(ChatName, ClientPID, Ref, State) ->
 			ChatPID = spawn(chatroom, start_chatroom, [ChatName]),
 			ClientNick = maps:find(ClientPID, State#serv_st.nicks),	
 			ChatPID!{self(), Ref, register, ClientPID, ClientNick},
-			State#serv_st{registrations = maps:update(ChatName, maps:put(ChatName, [ClientPID], State#serv_st.registrations), chatrooms = maps:put(ChatName, ChatPID, State#serv_st.chatrooms)};
+			State#serv_st{registrations = maps:put(ChatName, [ClientPID], State#serv_st.registrations), chatrooms = maps:put(ChatName, ChatPID, State#serv_st.chatrooms)};
 		{ok, Value} -> %%Chatroom exists
 			ClientNick = maps:find(ClientPID, State#serv_st.nicks),
 			Value!{self(), Ref, register, ClientPID, ClientNick},
@@ -75,7 +75,7 @@ do_join(ChatName, ClientPID, Ref, State) ->
 %% executes leave protocol from server perspective
 do_leave(ChatName, ClientPID, Ref, State) ->
 	ChatPID = maps:get(ChatName, State#serv_st.chatrooms),
-	Updated = State#serv_st{registrations = maps:update(ChatName, lists:delete([ClientPID], State#serv_st.registrations)), State#serv_st.registrations)},
+	Updated = State#serv_st{registrations = maps:update(ChatName, lists:delete([ClientPID], maps:get(ChatName, State#serv_st.registrations)), State#serv_st.registrations)},
 	ChatPID!{self(), Ref, unregister, ClientPID},
 	ClientPID!{self(), Ref, ack_leave},
 	Updated.
@@ -97,7 +97,7 @@ do_new_nick(State, Ref, ClientPID, NewNick) ->
 				end,
 				ListOfChats = maps:fold(Fun, [], Updated#serv_st.registrations),
 			lists:foreach(fun(X) ->
-				maps:get(X, Updated#serv_st.chatrooms)!{self(), Ref, update_nick, ClientPID, NewNick};
+				maps:get(X, Updated#serv_st.chatrooms)!{self(), Ref, update_nick, ClientPID, NewNick}
 				end,
 				ListOfChats),
 			ClientPID!{result, self(), Ref, ok_nick},
