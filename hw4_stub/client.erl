@@ -126,14 +126,14 @@ do_join(State, Ref, ChatName) ->
 %% executes `/leave` protocol from client perspective
 do_leave(State, Ref, ChatName) ->
     case lists:member(ChatName, maps:keys(State#cl_st.con_ch)) of
-		true -> 
+		false -> 
 			whereis(list_to_atom(State#cl_st.gui))!{result, self(), Ref, err},
 			{err, State};
-		false -> 
+		true -> 
 			whereis(server)!{self(), Ref, leave, ChatName},
 			receive
-				{From, Ref, ack_leave} ->
-					Updated = State#cl_st{con_ch = maps:remove(ChatName, From, State#cl_st.con_ch)},
+				{_, Ref, ack_leave} ->
+					Updated = State#cl_st{con_ch = maps:remove(ChatName, State#cl_st.con_ch)},
 					whereis(list_to_atom(Updated#cl_st.gui))!{result, self(), Ref, ok},
 					{ack_leave, Updated}
 			end
