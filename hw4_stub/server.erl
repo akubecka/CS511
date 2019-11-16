@@ -63,11 +63,11 @@ do_join(ChatName, ClientPID, Ref, State) ->
 	case maps:find(ChatName, State#serv_st.chatrooms) of
 		error -> %%Chatroom does not already exist
 			ChatPID = spawn(chatroom, start_chatroom, [ChatName]),
-			ClientNick = maps:find(ClientPID, State#serv_st.nicks),	
+			ClientNick = maps:get(ClientPID, State#serv_st.nicks),	
 			ChatPID!{self(), Ref, register, ClientPID, ClientNick},
 			State#serv_st{registrations = maps:put(ChatName, [ClientPID], State#serv_st.registrations), chatrooms = maps:put(ChatName, ChatPID, State#serv_st.chatrooms)};
 		{ok, Value} -> %%Chatroom exists
-			ClientNick = maps:find(ClientPID, State#serv_st.nicks),
+			ClientNick = maps:get(ClientPID, State#serv_st.nicks),
 			Value!{self(), Ref, register, ClientPID, ClientNick},
 			State#serv_st{registrations = maps:update(ChatName, lists:append([ClientPID], maps:get(ChatName, State#serv_st.registrations)), State#serv_st.registrations)}
 	end.
