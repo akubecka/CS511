@@ -159,6 +159,7 @@ do_new_nick(State, Ref, NewNick) ->
 
 %% executes send message protocol from client perspective
 do_msg_send(State, Ref, ChatName, Message) ->
+	io:format("do msg send start"),
     ChatPID = maps:get(ChatName, State#cl_st.con_ch),
 	ChatPID!{self(), Ref, message, Message},
 	receive
@@ -170,6 +171,7 @@ do_msg_send(State, Ref, ChatName, Message) ->
 %% executes new incoming message protocol from client perspective
 do_new_incoming_msg(State, _Ref, CliNick, ChatName, Msg) ->
     %% pass message along to gui
+	io:format("do new incoming msg start"),
     gen_server:call(list_to_atom(State#cl_st.gui), {msg_to_GUI, ChatName, CliNick, Msg}),
     {ok_msg_received, State}.
 
