@@ -127,6 +127,7 @@ do_client_quit(State, Ref, ClientPID) ->
 		maps:get(X, Updated1#serv_st.chatrooms)!{self(), Ref, unregister, ClientPID}
 		end,
 		ListOfChats),
+		Temp = Updated1#serv_st.registrations,
 		NewRegMap = maps:fold(fun(K,V,Map)->
 			case lists:member(ClientPID,V) of
 				true->
