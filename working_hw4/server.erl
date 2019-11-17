@@ -75,17 +75,18 @@ do_join(ChatName, ClientPID, Ref, State) ->
 %% executes leave protocol from server perspective
 do_leave(ChatName, ClientPID, Ref, State) ->
 	ChatPID = maps:get(ChatName, State#serv_st.chatrooms),
-	NewState = State#serv_st{registrations = maps:update(ChatName, lists:delete([ClientPID], maps:get(ChatName, State#serv_st.registrations)), State#serv_st.registrations)},
+	Updated = State#serv_st{registrations = maps:update(ChatName, lists:delete([ClientPID], maps:get(ChatName, State#serv_st.registrations)), State#serv_st.registrations)},
 	ChatPID!{self(), Ref, unregister, ClientPID},
 	ClientPID!{self(), Ref, ack_leave},
-	NewState.
+	io:format("Server leave done"),
+	Updated.
 
 
 %% executes new nickname protocol from server perspective
 do_new_nick(State, Ref, ClientPID, NewNick) ->
 	case lists:member(NewNick, maps:values(State#serv_st.nicks)) of
 		false -> %%Nickname not already used
-			NewState = State#serv_st{nicks = maps:update(ClientPID, NewNick, State#serv_st.nicks)},
+			Updated = State#serv_st{nicks = maps:update(ClientPID, NewNick, State#serv_st.nicks)},
 			Fun = fun(K,V,Chats) ->
 				case lists:member(ClientPID, V) of
 					true ->
@@ -94,13 +95,13 @@ do_new_nick(State, Ref, ClientPID, NewNick) ->
 						Chats
 					end
 				end,
-				ListOfChats = maps:fold(Fun, [], NewState#serv_st.registrations),
+				ListOfChats = maps:fold(Fun, [], Updated#serv_st.registrations),
 			lists:foreach(fun(X) ->
-				maps:get(X, NewState#serv_st.chatrooms)!{self(), Ref, update_nick, ClientPID, NewNick}
+				maps:get(X, Updated#serv_st.chatrooms)!{self(), Ref, update_nick, ClientPID, NewNick}
 				end,
 				ListOfChats),
 			ClientPID!{self(), Ref, ok_nick},
-			NewState;
+			Updated;
 		true ->
 			ClientPID!{self(), Ref, err_nick_used},
 			State
@@ -108,7 +109,7 @@ do_new_nick(State, Ref, ClientPID, NewNick) ->
 
 %% executes client quit protocol from server perspective
 do_client_quit(State, Ref, ClientPID) ->
-	NewState = State#serv_st{nicks = maps:remove(ClientPID, State#serv_st.nicks)},
+	Updated1 = State#serv_st{nicks = maps:remove(ClientPID, State#serv_st.nicks)},
 	Fun = fun(K,V,Chats) ->
 		case lists:member(ClientPID, V) of
 			true ->
@@ -117,13 +118,13 @@ do_client_quit(State, Ref, ClientPID) ->
 				Chats
 			end
 		end,
-	ListOfChats = maps:fold(Fun, [], NewState#serv_st.registrations),
+	ListOfChats = maps:fold(Fun, [], Updated1#serv_st.registrations),
 	lists:foreach(fun(X) ->
-		maps:get(X, NewState#serv_st.chatrooms)!{self(), Ref, unregister, ClientPID}
+		maps:get(X, Updated1#serv_st.chatrooms)!{self(), Ref, unregister, ClientPID}
 		end,
 		ListOfChats),
-		Temp = NewState#serv_st.registrations,
-		NewRegis = maps:fold(fun(K,V,Map)->
+		Temp = Updated1#serv_st.registrations,
+		NewRegMap = maps:fold(fun(K,V,Map)->
 			case lists:member(ClientPID,V) of
 				true->
 					maps:update(K, lists:delete(ClientPID, V), Map);
@@ -133,6 +134,7 @@ do_client_quit(State, Ref, ClientPID) ->
 			end,
 			Temp,
 			Temp),
-	NewNewState = NewState#serv_st{registrations = NewRegis},
+	Updated2 = Updated1#serv_st{registrations = NewRegMap},
 	ClientPID!{self(), Ref, ack_quit},
-	NewNewState.
+	io:format("Client quit done"),
+	Updated2.

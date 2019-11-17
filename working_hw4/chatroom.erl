@@ -40,18 +40,19 @@ end,
 
 %% This function should register a new client to this chatroom
 do_register(State, Ref, ClientPID, ClientNick) ->
-	NewState = State#chat_st{registrations = maps:put(ClientPID, ClientNick, State#chat_st.registrations)},
-    ClientPID!{self(), Ref, connect, NewState#chat_st.history},
-	NewState.
+	Updated = State#chat_st{registrations = maps:put(ClientPID, ClientNick, State#chat_st.registrations)},
+    ClientPID!{self(), Ref, connect, Updated#chat_st.history},
+	Updated.
 
 %% This function should unregister a client from this chatroom
 do_unregister(State, ClientPID) ->
-    State#chat_st{registrations = maps:remove(ClientPID, State#chat_st.registrations)}.
-
+    Updated = State#chat_st{registrations = maps:remove(ClientPID, State#chat_st.registrations)},
+	Updated.
 
 %% This function should update the nickname of specified client.
 do_update_nick(State, ClientPID, NewNick) ->
-	State#chat_st{registrations = maps:update(ClientPID, NewNick, State#chat_st.registrations)}.
+    Updated = State#chat_st{registrations = maps:update(ClientPID, NewNick, State#chat_st.registrations)},
+	Updated.
 
 %% This function should update all clients in chatroom with new message
 %% (read assignment specs for details)
@@ -65,4 +66,6 @@ do_propegate_message(State, Ref, ClientPID, Message) ->
 				ok end 
 		end,
 		maps:keys(State#chat_st.registrations)),
-	State#chat_st{history = lists:append(State#chat_st.history, [{maps:get(ClientPID, State#chat_st.registrations), Message}])}.
+	Updated = State#chat_st{history = lists:append(State#chat_st.history, [{maps:get(ClientPID, State#chat_st.registrations), Message}])},
+	io:format("Propegate message done"),
+	Updated.

@@ -117,9 +117,9 @@ do_join(State, Ref, ChatName) ->
 			whereis(server)!{self(), Ref, join, ChatName},
 			receive
 				{From, Ref, connect, History} ->
-					NewState = State#cl_st{con_ch = maps:put(ChatName, From, State#cl_st.con_ch)},
-					whereis(list_to_atom(NewState#cl_st.gui))!{result, self(), Ref, History},
-					{connect, NewState}
+					Updated = State#cl_st{con_ch = maps:put(ChatName, From, State#cl_st.con_ch)},
+					whereis(list_to_atom(Updated#cl_st.gui))!{result, self(), Ref, History},
+					{connect, Updated}
 			end
 	end.
 
@@ -133,9 +133,9 @@ do_leave(State, Ref, ChatName) ->
 			whereis(server)!{self(), Ref, leave, ChatName},
 			receive
 				{_, Ref, ack_leave} ->
-					NewState = State#cl_st{con_ch = maps:remove(ChatName, State#cl_st.con_ch)},
-					whereis(list_to_atom(NewState#cl_st.gui))!{result, self(), Ref, ok},
-					{ack_leave, NewState}
+					Updated = State#cl_st{con_ch = maps:remove(ChatName, State#cl_st.con_ch)},
+					whereis(list_to_atom(Updated#cl_st.gui))!{result, self(), Ref, ok},
+					{ack_leave, Updated}
 			end
 	end.
 
@@ -159,6 +159,7 @@ do_new_nick(State, Ref, NewNick) ->
 
 %% executes send message protocol from client perspective
 do_msg_send(State, Ref, ChatName, Message) ->
+	io:format("do msg send start"),
     ChatPID = maps:get(ChatName, State#cl_st.con_ch),
 	ChatPID!{self(), Ref, message, Message},
 	receive
@@ -170,6 +171,7 @@ do_msg_send(State, Ref, ChatName, Message) ->
 %% executes new incoming message protocol from client perspective
 do_new_incoming_msg(State, _Ref, CliNick, ChatName, Msg) ->
     %% pass message along to gui
+	io:format("do new incoming msg start"),
     gen_server:call(list_to_atom(State#cl_st.gui), {msg_to_GUI, ChatName, CliNick, Msg}),
     {ok_msg_received, State}.
 
