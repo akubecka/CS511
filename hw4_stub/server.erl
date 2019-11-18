@@ -75,7 +75,7 @@ do_join(ChatName, ClientPID, Ref, State) ->
 %% executes leave protocol from server perspective
 do_leave(ChatName, ClientPID, Ref, State) ->
 	ChatPID = maps:get(ChatName, State#serv_st.chatrooms),
-	NewState = State#serv_st{registrations = maps:update(ChatName, lists:delete([ClientPID], maps:get(ChatName, State#serv_st.registrations)), State#serv_st.registrations)},
+	NewState = State#serv_st{registrations = maps:update(ChatName, lists:delete(ClientPID, maps:get(ChatName, State#serv_st.registrations)), State#serv_st.registrations)},
 	ChatPID!{self(), Ref, unregister, ClientPID},
 	ClientPID!{self(), Ref, ack_leave},
 	NewState.
