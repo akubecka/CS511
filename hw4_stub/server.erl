@@ -94,11 +94,11 @@ do_new_nick(State, Ref, ClientPID, NewNick) ->
 						Chats
 					end
 				end,
-				ListOfChats = maps:fold(Fun, [], NewState#serv_st.registrations),
+				ChatroomList = maps:fold(Fun, [], NewState#serv_st.registrations),
 			lists:foreach(fun(X) ->
 				maps:get(X, NewState#serv_st.chatrooms)!{self(), Ref, update_nick, ClientPID, NewNick}
 				end,
-				ListOfChats),
+				ChatroomList),
 			ClientPID!{self(), Ref, ok_nick},
 			NewState;
 		true ->
@@ -117,12 +117,12 @@ do_client_quit(State, Ref, ClientPID) ->
 				Chats
 			end
 		end,
-	ListOfChats = maps:fold(Fun, [], NewState#serv_st.registrations),
+	ChatroomList = maps:fold(Fun, [], NewState#serv_st.registrations),
 	lists:foreach(fun(X) ->
 		maps:get(X, NewState#serv_st.chatrooms)!{self(), Ref, unregister, ClientPID}
 		end,
-		ListOfChats),
-		Temp = NewState#serv_st.registrations,
+		ChatroomList),
+		Regs = NewState#serv_st.registrations,
 		NewRegis = maps:fold(fun(K,V,Map)->
 			case lists:member(ClientPID,V) of
 				true->
@@ -131,8 +131,8 @@ do_client_quit(State, Ref, ClientPID) ->
 					Map
 				end
 			end,
-			Temp,
-			Temp),
+			Regs,
+		Regs),
 	NewNewState = NewState#serv_st{registrations = NewRegis},
 	ClientPID!{self(), Ref, ack_quit},
 	NewNewState.
