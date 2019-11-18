@@ -128,7 +128,7 @@ do_client_quit(State, Ref, ClientPID) ->
 				true->
 					maps:update(K, lists:delete(ClientPID, V), Map);
 				false ->
-					ok
+					Map
 				end
 			end,
 			Temp,
