@@ -3,7 +3,7 @@
 -author("Alex Kubecka").
 
 sensorFunc(WatcherPID, SensorID) ->
-    Measurement = rand:uniform(11).
+    Measurement = rand:uniform(11),
     case Measurement == 11 of 
         true -> exit("anamolous reading");
         false -> WatcherPID!{SensorID, Measurement}
