@@ -1,13 +1,13 @@
--module(hw5).
+-module(sensor).
 -compile(export_all).
 -author("Alex Kubecka").
 
-sensor(WatcherPID, SensorPID) ->
+sensorFunc(WatcherPID, SensorID) ->
     Measurement = rand:uniform(11).
     case Measurement == 11 of 
         true -> exit("anamolous reading");
-        false -> WatcherPID!{SensorPID, Measurement}
+        false -> WatcherPID!{SensorID, Measurement}
     end,
     Sleep_time = rand:uniform(10000),
     timer:sleep(Sleep_time),
-    sensor(WatcherPID, SensorPID).
+    sensorFunc(WatcherPID, SensorID).
